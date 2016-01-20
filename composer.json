@@ -1,6 +1,7 @@
 {
-    "name": "dirkolbrich/stockfighter-php",
-    "description": "wrapper for the stockfighter api",
+    "name": "dirkolbrich/stockfighter",
+    "description": "A wrapper for the stockfighter api",
+    "homepage": "https://github.com/dirkolbrich/stockfighter-php",
     "license": "MIT",
     "authors": [
         {
@@ -8,5 +9,15 @@
             "email": "mail@dirkolbrich.de"
         }
     ],
-    "require": {}
+    "autoload": {
+        "psr-4": {
+            "DirkOlbrich\\Stockfighter\\": "src/"
+        }
+    },
+    "require": {
+
+    },
+    "require-dev": {
+
+    }
 }
