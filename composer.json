@@ -1,0 +1,12 @@
+{
+    "name": "dirkolbrich/stockfighter-php",
+    "description": "wrapper for the stockfighter api",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dirk Olbrich",
+            "email": "mail@dirkolbrich.de"
+        }
+    ],
+    "require": {}
+}
