@@ -6,5 +6,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use DirkOlbrich\Stockfighter\Stockfighter;
 
+$api_key = '';
+
 $stockfighter = new Stockfighter;
-var_dump($stockfighter->venue('TESTEX'));
+var_dump($stockfighter->venue_heartbeat('TESTEX'));

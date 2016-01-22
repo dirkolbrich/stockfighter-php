@@ -1,40 +1,48 @@
 <?php
 namespace DirkOlbrich\Stockfighter;
 
-use GuzzleHttp\Client as HttpClient;
+use DirkOlbrich\Stockfighter\StockfighterApi;
 
 /**
 * 
 */
 class Stockfighter
 {
-    protected $base_url = 'https://api.stockfighter.io/ob/api/';
+    protected $api = null;
     
     protected $config = array();
 
     function __construct($config = array())
     {
         $this->config = $config;
+        $this->api = new StockfighterApi();
     }
 
+    // Heartbeat calls
+
     /**
-     * 
+     * basic check if api is up
+     * @return bool
      */
     public function heartbeat() {
-        $client = new HttpClient(['base_uri' => $this->base_url]);
-        $response = $client->get('heartbeat');
-        $content = json_decode($response->getBody()->getContents());
-        return $content->ok;
+        $response = json_decode($this->api->heartbeat());
+        return $response->ok;
     }
 
     /**
-     * 
+     * check if venue is up
+     * @param string $venue
+     * @return bool
      */
-    public function venue($venue) {
-        $client = new HttpClient(['base_uri' => $this->base_url]);
-        $response = $client->get('venues/' . $venue . '/heartbeat');
-        $content = json_decode($response->getBody()->getContents());
-        return $content->ok;
+    public function venue_heartbeat($venue) {
+        $response = json_decode($this->api->venue_heartbeat($venue));
+        return $response->ok;
     }
+
+    // Venue calls
+
+    // Stock calls
+
+    // GameMaster calls
 }
 
