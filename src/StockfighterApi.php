@@ -14,11 +14,11 @@ class StockfighterApi
     protected $base_gm = '/gm';
     protected $web_socket = 'wss://api.stockfighter.io/ob/api/ws';
     
-    protected $config = array();
+    protected $api_key = '';
 
-    function __construct($config = array())
+    function __construct()
     {
-        $this->config = $config;
+        $this->api_key = $_ENV('API_KEY');
     }
 
     // Heartbeat calls
@@ -28,6 +28,7 @@ class StockfighterApi
      * @return string
      */
     public function heartbeat() {
+        var_dump($_ENV);
         $client = new HttpClient(['base_uri' => $this->base_uri . $this->base_api]);
         $response = $client->get('heartbeat');
         return $response->getBody()->getContents();

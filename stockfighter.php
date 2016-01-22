@@ -4,9 +4,13 @@
 // Composer autoload.
 require __DIR__ . '/vendor/autoload.php';
 
+use Dotenv\Dotenv;
 use DirkOlbrich\Stockfighter\Stockfighter;
 
-$api_key = '';
+// set the API key via .env file
+$dotenv = new Dotenv(__DIR__);
+$dotenv->load();
 
+// load the stockfighter app
 $stockfighter = new Stockfighter;
 var_dump($stockfighter->venue_heartbeat('TESTEX'));
