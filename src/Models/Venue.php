@@ -1,15 +1,36 @@
 <?php
+namespace DirkOlbrich\Stockfighter\Models;
 
-namespace DirkOlbrich\Stockfighter;
+use DirkOlbrich\Stockfighter\Models\Symbol;
 
 /**
-* 
-*/
+ * A single venue.
+ */
 class Venue
 {
-    
-    function __construct()
+    /**
+     * ticker symbol of the venue
+     * @var Symbol
+     **/
+    public $symbol;
+
+    /**
+     * @var int
+     */
+    public $id = 0;
+
+    /**
+     * @var string
+     */
+    public $state;
+
+    /**
+     * @param mixed
+     */
+    public function __construct($config)
     {
-        # code...
+        $this->symbol = new Symbol($config->venue, $config->name);
+        $this->id = $config->id;
+        $this->state = $config->state;
     }
 }

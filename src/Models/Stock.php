@@ -1,15 +1,21 @@
 <?php
+namespace DirkOlbrich\Stockfighter\Models;
 
-namespace DirkOlbrich\Stockfighter;
+use DirkOlbrich\Stockfighter\Models\Symbol;
 
 /**
-* 
-*/
+ * A single Stock
+ */
 class Stock
 {
-    
-    function __construct()
+    /**
+     * ticker symbol of the stock
+     * @var Symbol
+     **/
+    public $symbol;
+
+    public function __construct($config)
     {
-        # code...
+        $this->symbol = new Symbol($config->symbol, $config->name);
     }
 }

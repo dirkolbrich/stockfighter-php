@@ -1,9 +1,14 @@
 <?php
-
-namespace DirkOlbrich\Stockfighter;
+namespace DirkOlbrich\Stockfighter\Models;
 
 class Symbol
 {
+    /**
+     * The symbol of the symbol.
+     * @var string
+     */
+    public $symbol;
+
     /**
      * The name of the symbol.
      * @var string
@@ -11,8 +16,12 @@ class Symbol
     public $name;
 
     /**
-     * The symbol of the symbol.
-     * @var string
+     * @param string $symbol
+     * @param string $name
      */
-    public $symbol;
+    public function __construct($symbol, $name)
+    {
+        $this->symbol = $symbol;
+        $this->name = $name;
+    }
 }

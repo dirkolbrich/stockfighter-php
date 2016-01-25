@@ -1,0 +1,41 @@
+#!/usr/bin/env php
+<?php
+
+// Composer autoload.
+require __DIR__ . '/vendor/autoload.php';
+
+use Dotenv\Dotenv;
+use DirkOlbrich\Stockfighter\Stockfighter;
+// use DirkOlbrich\Stockfighter\StockfighterApi;
+
+// set the API key via .env file
+$dotenv = new Dotenv(__DIR__);
+$dotenv->load();
+
+// load the stockfighter app
+$sf = new Stockfighter;
+$order = [
+    "account" => "EXB123456",
+    "venue" => "TESTEX",
+    "stock" => "FOOBAR",
+    "price" => 8000,
+    "qty" => 100,
+    "direction" => "sell",
+    "orderType" => "limit"
+];
+
+$level = 'first_steps';
+
+var_dump($sf->heartbeat());
+$sf->startGame($level);
+// usleep(4900000);
+// var_dump($sf->quote($sf->game->venues[0], $sf->game->tickers[0]));
+// var_dump($sf->sell($sf->game->venues[0], $sf->game->tickers[0], 10000, 1000, 'limit'));
+
+// var_dump($sf->buy($sf->game->venues[0], $sf->game->tickers[0], 9999, 100, 'limit'));
+usleep(1000000);
+var_dump($sf);
+var_dump($sf->stopGame());
+
+//var_dump($sf->levels());
+?>
