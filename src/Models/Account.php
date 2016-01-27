@@ -17,6 +17,11 @@ class Account
     public $inventory = [];
 
     /**
+     * @var array
+     */
+    public $transactions = [];
+
+    /**
      * The balance of this Account.
      * @var int
      */

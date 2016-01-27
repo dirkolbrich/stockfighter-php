@@ -4,38 +4,57 @@
 // Composer autoload.
 require __DIR__ . '/vendor/autoload.php';
 
-use Dotenv\Dotenv;
 use DirkOlbrich\Stockfighter\Stockfighter;
 // use DirkOlbrich\Stockfighter\StockfighterApi;
 
-// set the API key via .env file
-$dotenv = new Dotenv(__DIR__);
-$dotenv->load();
-
 // load the stockfighter app
 $sf = new Stockfighter;
-$order = [
-    "account" => "EXB123456",
-    "venue" => "TESTEX",
-    "stock" => "FOOBAR",
-    "price" => 8000,
-    "qty" => 100,
-    "direction" => "sell",
-    "orderType" => "limit"
-];
 
-$level = 'first_steps';
+// $level = 'first_steps';
+$level = 'chock_a_block';
 
-var_dump($sf->heartbeat());
-$sf->startGame($level);
-// usleep(4900000);
-// var_dump($sf->quote($sf->game->venues[0], $sf->game->tickers[0]));
+
+// var_dump($sf->heartbeat());
+$sf->gameStart($level);
+usleep(4000000);
+$sf->buy(10000, 1000, 'limit');
+$sf->sell(10000, 1000, 'limit');
+
+var_dump($sf->orderbook);
+
+$orderId = current($sf->orderbook->open())->orderId;
+var_dump($orderId);
+var_dump($sf->cancel($orderId));
+
+var_dump($sf->orderbook);
+// for ($i=0; $i<100; $i++) {
+//     // $quote = $sf->venue()->stock()->quote();
+//     $orderbook = $sf->venue()->stock()->orderbook();
+//     // var_dump($orderbook);
+//     $bids = isset($orderbook->bids) ? $orderbook->bids : null;
+//     $asks = isset($orderbook->asks) ? $orderbook->asks : null;
+
+//     if ($bids) {
+//         array_reverse($bids);
+//         foreach ($bids as $bid) {
+//             echo "Bid: " . $bid->price . " | Qty: " . $bid->qty . "\n";
+//         }
+//         $highestBid = $bids[0]->price;
+//         var_dump($sf->venue()->stock()->buy(
+//             $highestBid + floor($highestBid * 0.01),
+//             rand(9000, 11000),
+//             'immediate-or-cancel'
+//         ));
+//     }
+
+//     usleep(2000000);
+// }
+
+
 // var_dump($sf->sell($sf->game->venues[0], $sf->game->tickers[0], 10000, 1000, 'limit'));
 
 // var_dump($sf->buy($sf->game->venues[0], $sf->game->tickers[0], 9999, 100, 'limit'));
-usleep(1000000);
-var_dump($sf);
-var_dump($sf->stopGame());
+// usleep(1000000);
 
-//var_dump($sf->levels());
+// var_dump($sf->gameStop());
 ?>

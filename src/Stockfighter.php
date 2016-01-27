@@ -2,7 +2,6 @@
 namespace DirkOlbrich\Stockfighter;
 
 use DirkOlbrich\Stockfighter\Models\Game;
-use DirkOlbrich\Stockfighter\Models\Order;
 use DirkOlbrich\Stockfighter\Models\Stock;
 use DirkOlbrich\Stockfighter\Models\Venue;
 use DirkOlbrich\Stockfighter\Models\Account;
@@ -20,14 +19,25 @@ class Stockfighter
     public $orderbook;
 
     /**
+     * @var string
+     */
+    protected $stock = '';
+
+    /**
      * @var array
      */
     public $stocks = [];
 
     /**
+     * @var string
+     */
+    protected $venue = '';
+
+    /**
      * @var array
      */
     public $venues = [];
+
     
     public function __construct()
     {
@@ -59,17 +69,46 @@ class Stockfighter
 
     // Venue calls
 
+    /**
+     * @param string $venue
+     * @return self
+     */
+    public function venue($venue = '')
+    {
+        if ($venue) {
+            $this->venue = $venue;
+        } elseif (empty($this->venue)) {
+            $this->venue = $this->venues[0]->symbol->symbol;
+        };
+        return $this;
+    }
+
     // Stock calls
 
     /**
-     * get the actual quote for specific stock at specific venue
-     * @param string $venue
      * @param string $stock
-     * @return 
+     * @return self
      */
-    public function quote($venue, $stock)
+    public function stock($stock = '')
     {
-        $response = json_decode($this->api->quote($venue, $stock));
+        if ($stock) {
+            $this->stock = $stock;
+        } elseif (empty($this->stock)) {
+            $this->stock = $this->stocks[0]->symbol->symbol;
+        }
+        return $this;
+    }
+
+    /**
+     * get the actual quote for specific stock at specific venue
+     * @return string
+     */
+    public function quote()
+    {
+        $response = json_decode($this->api->quote(
+            $this->venue()->venue,
+            $this->stock()->stock
+        ));
         return $response;
     }
 
@@ -77,60 +116,148 @@ class Stockfighter
 
     /**
      * place a buy order
-     * @param string $venue
-     * @param string $stock
      * @param int $price
      * @param int $qty
      * @param string $type
      */
-    public function buy($venue, $stock, $price, $qty, $type)
+    public function buy($price, $qty, $type)
     {
-        $order = new Order();
         $order = [
             "account" => $this->account->accountId,
-            "venue" => $venue,
-            "stock" => $stock,
+            "venue" => $this->venue()->venue,
+            "stock" => $this->stock()->stock,
             "price" => $price,
             "qty" => $qty,
             "direction" => "buy",
             "orderType" => $type
         ];
-        $response = json_decode($this->api->order($venue, $stock, $order));
+        $response = json_decode($this->api->order(
+            $this->venue()->venue,
+            $this->stock()->stock,
+            $order
+        ));
+        // add order to orderbook
+        if ($response->ok) {
+            $this->orderbook->add($response);
+        }
         return $response;
     }
 
     /**
      * place a sell order
-     * @param string $venue
-     * @param string $stock
      * @param int $price
      * @param int $qty
      * @param string $type
+     * @return string
      */
-    public function sell($venue, $stock, $price, $qty, $type)
+    public function sell($price, $qty, $type)
     {
-         $order = [
+        $order = [
             "account" => $this->game->account,
-            "venue" => $venue,
-            "stock" => $stock,
+            "venue" => $this->venue()->venue,
+            "stock" => $this->stock()->stock,
             "price" => $price,
             "qty" => $qty,
             "direction" => "sell",
             "orderType" => $type
         ];
-        $response = json_decode($this->api->order($venue, $stock, $order));
-        return $response;       
+        $response = json_decode($this->api->order(
+            $this->venue()->venue,
+            $this->stock()->stock,
+            $order
+        ));
+        // add order to orderbook
+        if ($response->ok) {
+            $this->orderbook->add($response);
+        }
+        return $response->ok;
     }
 
-    public function cancel()
+    /**
+     * cancel an order
+     * @param int $orderId
+     * @return string
+     */
+    public function cancel($orderId)
     {
-        
+        // get order from orderbook
+        $order = $this->orderbook->order($orderId);
+        $response = json_decode($this->api->cancel(
+            $order->venue,
+            $order->stock,
+            $orderId
+        ));
+        // close order in orderbook
+        if ($response->ok) {
+            $this->orderbook->close($orderId, $response);
+        }
+        return $response->ok;
     }
-    
+
+    /**
+     * cancel all open orders
+     */
+    public function cancelAll()
+    {
+        // get all open orders from the orderbook
+        $orders = $this->orderbook->open;
+        foreach ($orders as $order) {
+            $this->cancel($order->orderId);
+        }
+    }
+
+    /**
+     * update status of an order
+     * @param int $orderId
+     * @return string
+     */
+    public function update($orderId)
+    {
+        // get order from orderbook
+        $order = $this->orderbook->order($orderId);
+        // get status of order
+        $response = json_decode($this->api->orderStatus(
+            $order->venue,
+            $order->stock,
+            $order->orderId
+        ));
+        // update order in orderbook
+        if ($response->ok) {
+            $this->orderbook->update($orderId, $response);
+        }
+        return $response->ok;
+    }
+
     // Orderbook calls
+
+    /**
+     * get orderbook for a specific stock at a specific market
+     * @return string
+     */
+    public function orderbook()
+    {
+        $response = json_decode($this->api->orderbook(
+            $this->venue()->venue,
+            $this->stock()->stock
+        ));
+        return $response;
+    }
+
+    public function orderbookUpdate()
+    {
+        // get all open orders from orderbook
+        $orders = $this->orderbook->open();
+        foreach ($orders as $order) {
+            // update order in orderbook
+            $this->update($order->orderId);
+        }
+    }
 
     // GameMaster calls
 
+    /**
+     * @return string
+     */
     public function levels()
     {
         $response = $this->api->levels();
@@ -141,7 +268,7 @@ class Stockfighter
      * start a new game
      * @param string $level
      */
-    public function startGame($level)
+    public function gameStart($level)
     {
         echo "in startGame()\n";
         $this->game = new Game(json_decode($this->api->start($level)));
@@ -164,27 +291,26 @@ class Stockfighter
             foreach ($this->game->tickers as $ticker) {
                 foreach ($stocks->symbols as $symbol) {
                     if ($symbol->symbol == $ticker) {
-                        $this->stocks[] = new stock($symbol);
+                        $this->stocks[] = new Stock($symbol);
                     }
                 }
             }
         }
     }
 
-
-    public function statusGame()
+    public function gameStatus()
     {
-        $response = $this->api->statusLevel($this->game->instanceId);
+        $response = $this->api->levelStatus($this->game->instanceId);
         return $response;
     }
 
-    public function stopGame()
+    public function gameStop()
     {
         $response = $this->api->stop($this->game->instanceId);
         return $response;
     }
 
-    public function restartGame()
+    public function gameRestart()
     {
         $response = $this->api->restart($this->game->instanceId);
         return $response;

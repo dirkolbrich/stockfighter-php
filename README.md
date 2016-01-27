@@ -20,7 +20,6 @@ Install via composer:
 ### Usage
 
 Rename the `.example.env` file to `.env` and set you `API_KEY`.
-*(Note: needs to be revised)*
 ```env
 API_KEY="your API key provided by stockfighter.io"
 ```
@@ -73,5 +72,6 @@ So far, it uses these dependencies.
 
 ### ToDo
 
-- provide and check loading of API_KEY within `StockfighterApi.php`
+- provide API_KEY completely indepentend from this package 
 - integrate web socket client
+- tests, tests, tests

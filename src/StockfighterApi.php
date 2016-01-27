@@ -1,6 +1,7 @@
 <?php
 namespace DirkOlbrich\Stockfighter;
 
+use Dotenv\Dotenv;
 use GuzzleHttp\Client as HttpClient;
 
 /**
@@ -19,6 +20,10 @@ class StockfighterApi
 
     public function __construct()
     {
+        // load .env
+        $dotenv = new Dotenv(dirname(__DIR__));
+        $dotenv->load();
+
         $this->api_key = $_ENV['API_KEY'];
         $this->client = new HttpClient([
             'base_uri' => self::BASE_URI,
@@ -145,6 +150,9 @@ class StockfighterApi
      */
     public function order($venue, $stock, $order)
     {
+        // var_dump($venue);
+        // var_dump($stock);
+        // var_dump($order);
         $response = $this->client->post(
             self::BASE_API . 'venues/' . $venue . '/stocks/' . $stock . '/orders',
             [ "json" => $order ]
@@ -174,7 +182,7 @@ class StockfighterApi
      * @param int $orderId
      * @return string
      */
-    public function statusOrder($venue, $stock, $orderId)
+    public function orderStatus($venue, $stock, $orderId)
     {
         $response = $this->client->get(
             self::BASE_API . 'venues/' . $venue . '/stocks/' . $stock . '/orders/'. $orderId
@@ -235,7 +243,7 @@ class StockfighterApi
      * status of a level
      * @param int $instanceId
      */
-    public function statusLevel($instanceId)
+    public function levelStatus($instanceId)
     {
         $response = $this->client->get(self::BASE_GM . 'instances/' . $instanceId);
         return $response->getBody()->getContents();
