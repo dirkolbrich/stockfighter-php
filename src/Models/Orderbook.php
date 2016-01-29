@@ -20,6 +20,7 @@ class Orderbook
 
     /**
      * @param int $orderId
+     * @return Order $order
      */
     public function order($orderId)
     {
@@ -31,6 +32,10 @@ class Orderbook
         ));
     }
 
+    /**
+     * get all open orders from $this->orders
+     * @return array
+     */
     public function open()
     {
         return array_filter(
@@ -41,6 +46,10 @@ class Orderbook
         );
     }
 
+    /**
+     * get all closed orders from $this->orders
+     * @return array
+     */
     public function closed()
     {
         return array_filter(
@@ -53,39 +62,40 @@ class Orderbook
 
     /**
      * @param string $response
+     * @return string $order
      */
-    public function add($response)
+    public function addOrder($response)
     {
         $order = new Order($response);
         $this->orders[] = $order;
+        return $order;
     }
 
     /**
-     * @param int $orderId
-     * @param strin $response
-     */
-    public function close($orderId, $response)
-    {
-        // iterate $this->orders and find $order with $orderId
-        $order = $this->order($orderId);
-        // compare $order with response
-        var_dump($response);
-        $newOrder = new Order($response);
-        var_dump($order == $newOrder);
-        // set $order->open to false
-        $order->close();
-    }
-
-    /**
+     * update an existing order with new info from API response
      * @param int $orderId
      * @param string $response
+     * @return string $order
      */
-    public function update($orderId, $response)
+    public function updateOrder($orderId, $response)
     {
         // iterate $this->orders and find $order with $orderId
-        // validate if order is open
-        // compare order with new order
-        // simple replace order?
-        // check if new order is open
+        $orders = array_filter(
+            $this->orders,
+            function ($order) use ($orderId) {
+                return ($order->orderId == $orderId);
+            }
+        );
+        // sanity check, compare venue, stock and timestamp
+        foreach ($orders as $key => $item) {
+            if ($item->venue == $response->venue &&
+                $item->stock == $response->symbol &&
+                $item->ts == $response->ts) {
+                // replace order in $this->orders with $response
+                $order = new Order($response);
+                $this->orders[$key] = $order;
+            }
+        }
+        return $order;
     }
 }

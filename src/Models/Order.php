@@ -70,4 +70,16 @@ class Order
     {
         $this->open = false;
     }
+
+    /**
+     * check order for fills
+     * @return array
+     */
+    public function fills()
+    {
+        if ($this->fills) {
+             return $this->fills;
+        }
+        return null; 
+    }
 }

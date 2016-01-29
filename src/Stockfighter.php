@@ -119,6 +119,7 @@ class Stockfighter
      * @param int $price
      * @param int $qty
      * @param string $type
+     * @return string $order
      */
     public function buy($price, $qty, $type)
     {
@@ -138,9 +139,10 @@ class Stockfighter
         ));
         // add order to orderbook
         if ($response->ok) {
-            $this->orderbook->add($response);
+            $order = $this->orderbook->addOrder($response);
+            $this->transaction($order);
         }
-        return $response;
+        return $order;
     }
 
     /**
@@ -148,7 +150,7 @@ class Stockfighter
      * @param int $price
      * @param int $qty
      * @param string $type
-     * @return string
+     * @return int $order
      */
     public function sell($price, $qty, $type)
     {
@@ -168,17 +170,18 @@ class Stockfighter
         ));
         // add order to orderbook
         if ($response->ok) {
-            $this->orderbook->add($response);
+            $order = $this->orderbook->addOrder($response);
+            $this->transaction($order);
         }
-        return $response->ok;
+        return $order;
     }
 
     /**
      * cancel an order
      * @param int $orderId
-     * @return string
+     * @return int $orderId
      */
-    public function cancel($orderId)
+    public function cancelOrder($orderId)
     {
         // get order from orderbook
         $order = $this->orderbook->order($orderId);
@@ -187,11 +190,12 @@ class Stockfighter
             $order->stock,
             $orderId
         ));
-        // close order in orderbook
+        // update order in the orderbook
         if ($response->ok) {
-            $this->orderbook->close($orderId, $response);
+            $order = $this->orderbook->updateOrder($orderId, $response);
+            $this->transaction($order);
         }
-        return $response->ok;
+        return $order;
     }
 
     /**
@@ -202,16 +206,16 @@ class Stockfighter
         // get all open orders from the orderbook
         $orders = $this->orderbook->open;
         foreach ($orders as $order) {
-            $this->cancel($order->orderId);
+            $this->cancelOrder($order->orderId);
         }
     }
 
     /**
      * update status of an order
      * @param int $orderId
-     * @return string
+     * @return string $order
      */
-    public function update($orderId)
+    public function updateOrder($orderId)
     {
         // get order from orderbook
         $order = $this->orderbook->order($orderId);
@@ -223,9 +227,10 @@ class Stockfighter
         ));
         // update order in orderbook
         if ($response->ok) {
-            $this->orderbook->update($orderId, $response);
+            $order = $this->orderbook->updateOrder($orderId, $response);
+            $this->transaction($order);
         }
-        return $response->ok;
+        return $order;
     }
 
     // Orderbook calls
@@ -243,13 +248,37 @@ class Stockfighter
         return $response;
     }
 
+    /**
+     * update all open orders in the orderbook
+     */
     public function orderbookUpdate()
     {
         // get all open orders from orderbook
         $orders = $this->orderbook->open();
         foreach ($orders as $order) {
             // update order in orderbook
-            $this->update($order->orderId);
+            $this->updateOrder($order->orderId);
+        }
+    }
+
+    // Account calls
+
+    public function accountUpdate()
+    {
+        
+    }
+
+    /**
+     * add or update a transaction for this order to the account
+     * @param string $order
+     */
+    public function transaction($order)
+    {
+        // get order and fills from order
+        $fills = $order->fills();
+        if ($fills) {
+            // add transaction to account
+            $this->account->addTransaction($order, $fills);
         }
     }
 
@@ -270,7 +299,6 @@ class Stockfighter
      */
     public function gameStart($level)
     {
-        echo "in startGame()\n";
         $this->game = new Game(json_decode($this->api->start($level)));
         $this->account = new Account($this->game->account);
         $this->orderbook = new Orderbook();
