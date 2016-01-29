@@ -4,29 +4,54 @@
 // Composer autoload.
 require __DIR__ . '/vendor/autoload.php';
 
+use Dotenv\Dotenv;
 use DirkOlbrich\Stockfighter\Stockfighter;
-// use DirkOlbrich\Stockfighter\StockfighterApi;
+
+// load .env
+$dotenv = new Dotenv(__DIR__);
+$dotenv->load();
 
 // load the stockfighter app
-$sf = new Stockfighter;
+$sf = new Stockfighter($_ENV['API_KEY']);
 
 // $level = 'first_steps';
 $level = 'chock_a_block';
 
 
 // var_dump($sf->heartbeat());
+echo "Starting Game\n";
 $sf->gameStart($level);
 usleep(4000000);
-$sf->buy(10000, 1000, 'limit');
-$sf->sell(10000, 1000, 'limit');
+echo "Buying Order \n";
+$sf->buy(10000, 10000, 'limit');
+echo "Selling Order \n";
+$sf->sell(10000, 10000, 'limit');
 
-var_dump($sf->orderbook);
+$orderbook = $sf->orderbook;
+echo "Orders:\n";
+foreach ($orderbook->orders as $order) {
+    echo $order->direction . " | Price " . $order->price;
+    echo " | Qty " . $order->originalQty . " | Fiiled " . $order->totalFilled . "\n";
+}
 
-$orderId = current($sf->orderbook->open())->orderId;
-var_dump($orderId);
-var_dump($sf->cancel($orderId));
+$openOrders = $sf->orderbook->open();
+usleep(10000000);
 
-var_dump($sf->orderbook);
+echo "Canceling Order \n";
+foreach ($openOrders as $order) {
+    $sf->cancelOrder($order->orderId);
+}
+
+$account = $sf->account;
+echo "Balance: " . $account->balance. "\n";
+foreach ($account->inventory as $pos) {
+    echo "Stock " . $pos->stock . " | Qty " . $pos->qty . " | Avg Price " . $pos->avgPrice . "\n";
+}
+foreach ($account->transactions as $trans) {
+    echo $trans->direction . " | Qty " . $trans->qty . " | Price " . $trans->price . "\n";
+}
+
+
 // for ($i=0; $i<100; $i++) {
 //     // $quote = $sf->venue()->stock()->quote();
 //     $orderbook = $sf->venue()->stock()->orderbook();
@@ -50,11 +75,4 @@ var_dump($sf->orderbook);
 //     usleep(2000000);
 // }
 
-
-// var_dump($sf->sell($sf->game->venues[0], $sf->game->tickers[0], 10000, 1000, 'limit'));
-
-// var_dump($sf->buy($sf->game->venues[0], $sf->game->tickers[0], 9999, 100, 'limit'));
-// usleep(1000000);
-
-// var_dump($sf->gameStop());
 ?>
