@@ -1,7 +1,6 @@
 <?php
 namespace DirkOlbrich\Stockfighter;
 
-use Dotenv\Dotenv;
 use GuzzleHttp\Client as HttpClient;
 
 /**
@@ -18,13 +17,9 @@ class StockfighterApi
     protected $api_key = '';
     protected $client = '';
 
-    public function __construct()
+    public function __construct($apiKey)
     {
-        // load .env
-        $dotenv = new Dotenv(dirname(__DIR__));
-        $dotenv->load();
-
-        $this->api_key = $_ENV['API_KEY'];
+        $this->api_key = $apiKey;
         $this->client = new HttpClient([
             'base_uri' => self::BASE_URI,
             'headers' => ['X-Starfighter-Authorization' => $this->api_key]

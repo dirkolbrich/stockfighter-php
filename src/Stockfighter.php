@@ -38,10 +38,12 @@ class Stockfighter
      */
     public $venues = [];
 
-    
-    public function __construct()
+    /**
+     * @param string $apiKey your stockfighter.io API key
+     */
+    public function __construct($apiKey)
     {
-        $this->api = new StockfighterApi();
+        $this->api = new StockfighterApi($apiKey);
     }
 
     // Heartbeat calls
